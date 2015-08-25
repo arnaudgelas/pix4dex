@@ -4,3 +4,4 @@ build*/
 *.user*
 *.kdev*
 *.orig
+main
