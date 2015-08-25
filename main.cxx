@@ -38,15 +38,15 @@ struct Job
     {
         if( _status == Running )
         {
-           return "Status : Running";
+            return "Status : Running";
         }
         else if( _status == Paused )
         {
-          return "Status : Paused";
+            return "Status : Paused";
         }
         else
         {
-          return "Status : Stopped";
+            return "Status : Stopped";
         }
     }
 
@@ -61,8 +61,6 @@ struct Job
 
     std::mutex _mutex;
     std::condition_variable _condition;
-
-    friend std::ostream & operator<<(std::ostream &os, const Job& p);
 };
 
 struct Worker
@@ -85,7 +83,7 @@ struct Worker
 
                 while( _job._status == Job::Paused )
                 {
-                  _job._condition.wait( lock );
+                    _job._condition.wait( lock );
                 }
 
                 if( _job._completed )
@@ -216,20 +214,20 @@ private:
     void stop( size_t id, size_t& n )
     {
         if( _jobs[id]._status != Job::Stopped )
+        {
             {
-                {
-                  std::unique_lock< std::mutex > lock( _jobs[id]._mutex );
-                  _jobs[id]._status = Job::Stopped;
-                }
+                std::unique_lock< std::mutex > lock( _jobs[id]._mutex );
+                _jobs[id]._status = Job::Stopped;
+            }
 
-                {
-                    _jobs[id]._condition.notify_one();
-                }
+            {
+                _jobs[id]._condition.notify_one();
+            }
 
-                _threads[id].join();
+            _threads[id].join();
 
-                std::cout << "stopping thread " << id << std::endl;
-                --n;
+            std::cout << "stopping thread " << id << std::endl;
+            --n;
 
         }
     }
@@ -269,52 +267,52 @@ private:
 
 int main( int argc, char * argv[] )
 {
-  boost::program_options::options_description description( "options" );
-  description.add_options()
-          ( "help", "print help message and instructions" )
-          (  "thread",
-             boost::program_options::value< size_t >(),
-             "number of threads to run" );
+    boost::program_options::options_description description( "options" );
+    description.add_options()
+    ( "help", "print help message and instructions" )
+    (  "thread",
+       boost::program_options::value< size_t >(),
+       "number of threads to run" );
 
-  try
-  {
-  boost::program_options::variables_map variableMap;
-    boost::program_options::store(
-        boost::program_options::parse_command_line(argc, argv, description), variableMap);
-    boost::program_options::notify(variableMap);
-
-    size_t numberOfThreads = 0;
-
-  if( variableMap.count( "help" ) != 0 )
+    try
     {
-      std::cout << description << std::endl;
-      return EXIT_FAILURE;
-    }
-  else if( variableMap.count( "thread" ) != 0 )
-  {
-    numberOfThreads = variableMap[ "thread" ].as< size_t >();
-  }
-  else
-  {
-    std::cout << description << std::endl;
-    return EXIT_FAILURE;
-  }
+        boost::program_options::variables_map variableMap;
+        boost::program_options::store(
+            boost::program_options::parse_command_line( argc, argv, description ), variableMap );
+        boost::program_options::notify( variableMap );
 
-    ThreadManager manager( numberOfThreads );
-    manager.run();
-  }
-  catch( boost::program_options::error& e )
-  {
-    std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
-    std::cerr << description << std::endl;
-    return EXIT_FAILURE;
-  }
-  catch(std::exception& e)
-  {
-      std::cerr << "Unhandled Exception reached the top of main: "
-                << e.what() << ", application will now exit" << std::endl;
-      return EXIT_FAILURE;
-  }
+        size_t numberOfThreads = 0;
+
+        if( variableMap.count( "help" ) != 0 )
+        {
+            std::cout << description << std::endl;
+            return EXIT_FAILURE;
+        }
+        else if( variableMap.count( "thread" ) != 0 )
+        {
+            numberOfThreads = variableMap[ "thread" ].as< size_t >();
+        }
+        else
+        {
+            std::cout << description << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        ThreadManager manager( numberOfThreads );
+        manager.run();
+    }
+    catch( boost::program_options::error& e )
+    {
+        std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
+        std::cerr << description << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch(std::exception& e)
+    {
+        std::cerr << "Unhandled Exception reached the top of main: "
+                  << e.what() << ", application will now exit" << std::endl;
+        return EXIT_FAILURE;
+    }
     return EXIT_SUCCESS;
 }
 
